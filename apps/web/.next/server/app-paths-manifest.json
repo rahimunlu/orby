@@ -1,0 +1,10 @@
+{
+  "/api/festival/balances/route": "app/api/festival/balances/route.js",
+  "/api/admin/festival/route": "app/api/admin/festival/route.js",
+  "/api/festival/topup/route": "app/api/festival/topup/route.js",
+  "/wallet/page": "app/wallet/page.js",
+  "/activity/page": "app/activity/page.js",
+  "/menu/page": "app/menu/page.js",
+  "/qr/page": "app/qr/page.js",
+  "/admin/page": "app/admin/page.js"
+}

@@ -1,7 +1,0 @@
-{
-  "name": "Copy of orby",
-  "description": "The premium universal festival wallet.",
-  "requestFramePermissions": [
-    "camera"
-  ]
-}
