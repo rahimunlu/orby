@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 import { session } from '@/lib/session';
 import { wdkClient } from '@/lib/wdk/client';
 import type { UserBalance, FestivalConfig } from '@orby/types';
-import { ArrowUpRight, Plus, RefreshCw, Lock, Unlock, ExternalLink } from 'lucide-react';
+import { ArrowUpRight, Plus, RefreshCw, Lock, Unlock, ExternalLink, Copy, Check } from 'lucide-react';
 import Layout from '@/components/Layout';
 
 /**
@@ -29,6 +29,8 @@ export default function WalletPage() {
   const [depositAmount, setDepositAmount] = useState<number>(10);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
+  const [addressCopied, setAddressCopied] = useState(false);
+  const [walletAddress, setWalletAddress] = useState('');
 
   // Check wallet initialization state and redirect if no wallet (Requirement 1.4)
   useEffect(() => {
@@ -36,6 +38,11 @@ export default function WalletPage() {
       if (!wdkClient.hasWallet()) {
         router.push('/login');
         return;
+      }
+      // Get wallet address from seed phrase (client-side derivation)
+      const address = wdkClient.getAddress();
+      if (address) {
+        setWalletAddress(address);
       }
       setCheckingAuth(false);
     };
@@ -49,8 +56,16 @@ export default function WalletPage() {
       const userId = sess?.userId || 'user123';
       const sessionToken = sess?.sessionToken || 'sessionToken';
       
+      // Get address from client-side WDK
+      const address = wdkClient.getAddress();
+      if (!address) {
+        console.error('No wallet address');
+        setLoading(false);
+        return;
+      }
+      
       const [bal, fest] = await Promise.all([
-        api.getBalances(userId, sessionToken),
+        api.getBalances(userId, sessionToken, address),
         api.getFestival(),
       ]);
       setBalance(bal);
@@ -75,10 +90,19 @@ export default function WalletPage() {
     setToppingUp(true);
     try {
       const sess = session.get();
+      const seedPhrase = wdkClient.getSeedPhrase();
+      
+      if (!seedPhrase) {
+        showToast('Wallet not found. Please login again.');
+        setToppingUp(false);
+        return;
+      }
+
       const result = await api.topUp({
         userId: sess?.userId || 'user123',
         sessionToken: sess?.sessionToken || 'sessionToken',
         amountUsdt: depositAmount,
+        seedPhrase,
       });
       if (result.success) {
         await fetchData();
@@ -107,9 +131,18 @@ export default function WalletPage() {
     setCashingOut(true);
     try {
       const sess = session.get();
+      const seedPhrase = wdkClient.getSeedPhrase();
+      
+      if (!seedPhrase) {
+        showToast('Wallet not found. Please login again.');
+        setCashingOut(false);
+        return;
+      }
+
       const result = await api.cashOut(
         sess?.userId || 'user123',
-        sess?.sessionToken || 'sessionToken'
+        sess?.sessionToken || 'sessionToken',
+        seedPhrase
       );
       if (result.success) {
         await fetchData();
@@ -153,7 +186,30 @@ export default function WalletPage() {
 
   // Determine redemption status (Requirement 5.4)
   const isRedemptionOpen = festival?.redemptionOpen || (festival && festival.endTime <= Date.now() / 1000);
-  const redemptionStatus = isRedemptionOpen ? 'Open' : 'Closed';
+
+  // Update wallet address from balance API if not set
+  useEffect(() => {
+    if (!walletAddress && balance?.userAddress) {
+      setWalletAddress(balance.userAddress);
+    }
+  }, [balance, walletAddress]);
+  
+  // Format wallet address for display (short format)
+  const shortAddress = walletAddress 
+    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+    : '';
+
+  // Copy wallet address to clipboard
+  const copyAddress = async () => {
+    if (!walletAddress) return;
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setAddressCopied(true);
+      setTimeout(() => setAddressCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy address:', err);
+    }
+  };
 
   // Show loading while checking authentication
   if (checkingAuth) {
@@ -172,15 +228,26 @@ export default function WalletPage() {
         <div className="flex justify-between items-center mb-4 animate-fade-in">
           <h1 className="text-3xl font-display font-black tracking-tighter lowercase italic">orby</h1>
           <div className="flex items-center gap-2">
-            {/* Redemption Status Badge (Requirement 5.4) */}
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${
-              isRedemptionOpen 
-                ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-                : 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-            }`}>
-              {isRedemptionOpen ? <Unlock size={12} /> : <Lock size={12} />}
-              {redemptionStatus}
-            </div>
+            {/* Wallet Address Badge (clickable to copy) */}
+            {shortAddress && (
+              <button
+                onClick={copyAddress}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border bg-black/20 text-white/90 border-white/20 hover:bg-black/30 transition-colors font-mono"
+                title={walletAddress}
+              >
+                {addressCopied ? (
+                  <>
+                    <Check size={12} className="text-green-400" />
+                    <span className="text-green-400">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={12} />
+                    {shortAddress}
+                  </>
+                )}
+              </button>
+            )}
             <button 
               onClick={fetchData}
               disabled={loading}
@@ -312,20 +379,7 @@ export default function WalletPage() {
           </div>
         )}
 
-        {/* Vault Info Link */}
-        {festival?.vaultAddress && (
-          <div className="mb-4 animate-fade-in-up delay-400">
-            <a
-              href={`https://sepolia.etherscan.io/address/${festival.vaultAddress}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 text-xs text-white/50 hover:text-white/80 transition-colors"
-            >
-              <ExternalLink size={12} />
-              View Vault on Etherscan
-            </a>
-          </div>
-        )}
+
       </div>
     </Layout>
   );

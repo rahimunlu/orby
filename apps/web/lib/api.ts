@@ -37,14 +37,14 @@ export const api = {
     return res.json();
   },
 
-  getBalances: async (userId: string, sessionToken: string): Promise<UserBalance> => {
+  getBalances: async (userId: string, sessionToken: string, userAddress: string): Promise<UserBalance> => {
     const res = await fetch(
-      `${API_BASE}/api/festival/balances?userId=${userId}&sessionToken=${sessionToken}`
+      `${API_BASE}/api/festival/balances?userId=${userId}&sessionToken=${sessionToken}&userAddress=${userAddress}`
     );
     return res.json();
   },
 
-  topUp: async (data: TopUpRequest): Promise<TopupResponse> => {
+  topUp: async (data: TopUpRequest & { seedPhrase: string }): Promise<TopupResponse> => {
     const res = await fetch(`${API_BASE}/api/festival/topup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -53,11 +53,11 @@ export const api = {
     return res.json();
   },
 
-  cashOut: async (userId: string, sessionToken: string): Promise<CashoutResponse> => {
+  cashOut: async (userId: string, sessionToken: string, seedPhrase: string): Promise<CashoutResponse> => {
     const res = await fetch(`${API_BASE}/api/festival/cashout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, sessionToken }),
+      body: JSON.stringify({ userId, sessionToken, seedPhrase }),
     });
     return res.json();
   },

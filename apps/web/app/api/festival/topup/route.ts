@@ -1,28 +1,35 @@
 import { NextResponse } from 'next/server';
 import { type Address } from 'viem';
-import { wdkServer, ACCOUNT_INDEX } from '@/lib/wdk/server';
+import WDK from '@tetherto/wdk';
+import WalletManagerEvm from '@tetherto/wdk-wallet-evm';
 import { contractEncoders } from '@/lib/wdk/encoding';
-import type { TopUpRequest, TopupResponse } from '@orby/types';
+import type { TopupResponse } from '@orby/types';
 
-// Contract addresses from config
-const USDT_ADDRESS = process.env.USDT_ADDRESS || '0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0';
-const VAULT_ADDRESS = process.env.VAULT_ADDRESS || '0x559504A83Cc1cFb3f096568AB7E8b7eC0AC94793';
+// Contract addresses from environment
+const USDT_ADDRESS = process.env.NEXT_PUBLIC_TESTUSDT_ADDRESS || process.env.USDT_ADDRESS;
+const VAULT_ADDRESS = process.env.NEXT_PUBLIC_FESTIVAL_VAULT_ADDRESS || process.env.VAULT_ADDRESS;
+const RPC_URL = process.env.SEPOLIA_RPC_URL || 'https://rpc.sepolia.org';
+
+if (!USDT_ADDRESS || !VAULT_ADDRESS) {
+  console.warn('Warning: USDT_ADDRESS or VAULT_ADDRESS not configured in environment');
+}
 
 /**
  * POST /api/festival/topup
  * 
  * Deposits USDT into the vault and receives festival tokens
  * Step 1: Approve USDT spending by vault
- * Step 2: Call vault.deposit(amount)
+ * Step 2: Wait for approval confirmation
+ * Step 3: Call vault.deposit(amount)
  * 
- * Uses WDK server with demo user account (index 1)
+ * Uses user's seed phrase from request body
  * 
  * Requirements: 3.3, 3.4
  */
 export async function POST(request: Request) {
   try {
-    const body: TopUpRequest = await request.json();
-    const { userId, amountUsdt } = body;
+    const body = await request.json();
+    const { userId, amountUsdt, seedPhrase } = body;
 
     if (!userId) {
       return NextResponse.json(
@@ -38,6 +45,21 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!seedPhrase) {
+      return NextResponse.json(
+        { error: 'seedPhrase is required' },
+        { status: 400 }
+      );
+    }
+
+    // Initialize WDK with user's seed phrase
+    const wdk = new WDK(seedPhrase);
+    wdk.registerWallet('ethereum', WalletManagerEvm, {
+      provider: RPC_URL,
+    });
+
+    const account = await wdk.getAccount('ethereum', 0);
+
     // Convert USDT amount to base units (6 decimals)
     const usdtAmount = BigInt(Math.floor(amountUsdt * 1_000_000));
 
@@ -47,25 +69,32 @@ export async function POST(request: Request) {
       usdtAmount
     );
 
-    const { hash: approvalHash } = await wdkServer.sendTransaction({
-      accountIndex: ACCOUNT_INDEX.DEMO_USER,
-      to: USDT_ADDRESS as Address,
-      data: approveData,
-    });
+    const approveTx = await account.sendTransaction({
+      to: USDT_ADDRESS as string,
+      value: BigInt(0),
+      data: approveData as string,
+    } as Parameters<typeof account.sendTransaction>[0]);
 
-    // Step 2: Encode and send vault.deposit(amount)
+    console.log('Approval tx sent:', approveTx.hash);
+
+    // Step 2: Wait a bit for approval to be mined (simple delay)
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // Step 3: Encode and send vault.deposit(amount)
     const depositData = contractEncoders.encodeDeposit(usdtAmount);
 
-    const { hash: depositHash } = await wdkServer.sendTransaction({
-      accountIndex: ACCOUNT_INDEX.DEMO_USER,
-      to: VAULT_ADDRESS as Address,
-      data: depositData,
-    });
+    const depositTx = await account.sendTransaction({
+      to: VAULT_ADDRESS as string,
+      value: BigInt(0),
+      data: depositData as string,
+    } as Parameters<typeof account.sendTransaction>[0]);
+
+    console.log('Deposit tx sent:', depositTx.hash);
 
     const response: TopupResponse = {
       success: true,
-      approvalHash,
-      depositHash,
+      approvalHash: approveTx.hash,
+      depositHash: depositTx.hash,
     };
 
     return NextResponse.json(response);

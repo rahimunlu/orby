@@ -1,6 +1,7 @@
 'use client';
 
 import * as bip39 from 'bip39';
+import { HDNodeWallet } from 'ethers';
 
 /**
  * Sepolia network configuration
@@ -89,6 +90,24 @@ export const wdkClient = {
   clearWallet(): void {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(STORAGE_KEY);
+  },
+
+  /**
+   * Get wallet address from stored seed phrase
+   * Derives address using BIP-44 path for Ethereum (m/44'/60'/0'/0/0)
+   * 
+   * @returns The wallet address or null if no seed
+   */
+  getAddress(): string | null {
+    const seedPhrase = this.getSeedPhrase();
+    if (!seedPhrase) return null;
+    
+    try {
+      const wallet = HDNodeWallet.fromPhrase(seedPhrase);
+      return wallet.address;
+    } catch {
+      return null;
+    }
   },
 };
 

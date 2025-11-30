@@ -1,16 +1,17 @@
 {
+  "/api/admin/faucet/route": "/api/admin/faucet",
   "/api/admin/create-festival/route": "/api/admin/create-festival",
+  "/api/admin/festival/route": "/api/admin/festival",
   "/api/festival/balances/route": "/api/festival/balances",
   "/api/festival/cashout/route": "/api/festival/cashout",
   "/api/festival/join/route": "/api/festival/join",
   "/api/festival/topup/route": "/api/festival/topup",
-  "/api/admin/festival/route": "/api/admin/festival",
   "/_not-found/page": "/_not-found",
-  "/page": "/",
-  "/login/page": "/login",
+  "/admin/page": "/admin",
   "/activity/page": "/activity",
+  "/menu/page": "/menu",
+  "/page": "/",
   "/qr/page": "/qr",
   "/wallet/page": "/wallet",
-  "/admin/page": "/admin",
-  "/menu/page": "/menu"
+  "/login/page": "/login"
 }
