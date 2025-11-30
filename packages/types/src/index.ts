@@ -2,6 +2,7 @@
 export interface UserBalance {
   usdt: string;
   festivalTokens: string;
+  escrowedUSDT: string;
   userAddress: string;
   treasuryAddress: string;
 }
@@ -10,7 +11,15 @@ export interface FestivalConfig {
   name: string;
   symbol: string;
   tokenAddress: string;
+  vaultAddress: string;
   ownerAddress: string;
+  factoryAddress: string;
+  startTime: number;
+  endTime: number;
+  redemptionOpen?: boolean;
+  createdAt?: string;
+  network?: string;
+  chainId?: number;
 }
 
 // Request Types
@@ -34,14 +43,14 @@ export interface JoinResponse {
 
 export interface TopupResponse {
   success: boolean;
-  transferHash: string;
-  mintHash: string;
+  approvalHash: string;
+  depositHash: string;
 }
 
 export interface CashoutResponse {
   success: boolean;
-  burnHash: string;
-  transferHash: string;
+  withdrawHash: string;
+  usdtReturned: string;
 }
 
 // Navigation Types

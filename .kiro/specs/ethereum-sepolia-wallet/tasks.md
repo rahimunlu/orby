@@ -178,56 +178,85 @@
     - Verify balances after each operation
     - _Requirements: 7.3_
 
-- [ ] 7. Implement WDK server-side module
-  - [ ] 7.1 Create WDK server module (`apps/web/lib/wdk/server.ts`)
+- [x] 7. Implement WDK server-side module
+
+
+
+  - [x] 7.1 Create WDK server module (`apps/web/lib/wdk/server.ts`)
+
     - Initialize WDK with mnemonic from WDK_SEED_PHRASE environment variable
     - Use `new WDK(seedPhrase).registerWallet('ethereum', WalletManagerEvm, { provider })` pattern
     - Use `wdk.getAccount('ethereum', index)` - index 0 for admin, index 1 for demo user
     - Use `account.sendTransaction({ to, value, data })` for transactions
     - _Requirements: 9.2, 9.3_
-  - [ ] 7.2 Create Viem encoding utilities (`apps/web/lib/wdk/encoding.ts`)
+
+
+  - [x] 7.2 Create Viem encoding utilities (`apps/web/lib/wdk/encoding.ts`)
+
     - Import contract ABIs
     - Helper functions for encodeFunctionData
     - _Requirements: 9.1_
 
-- [ ] 8. Update API routes for blockchain integration
-  - [ ] 8.1 Update types package with new interfaces
+- [x] 8. Update API routes for blockchain integration
+
+
+
+
+
+  - [x] 8.1 Update types package with new interfaces
+
+
     - Add vaultAddress to FestivalConfig
     - Update TopupResponse with approvalHash, depositHash
     - Update CashoutResponse with withdrawHash
     - _Requirements: 3.4, 4.4_
-  - [ ] 8.2 Update create-festival API route
+  - [x] 8.2 Update create-festival API route
+
+
     - Use WDK server (account index 0)
     - Encode createFestival call with Viem
     - Broadcast via WDK
     - Save Token and Vault addresses to config
     - _Requirements: 6.1, 6.2, 6.4_
-  - [ ] 8.3 Update topup API route
+  - [x] 8.3 Update topup API route
+
+
     - Use WDK server (account index 1)
     - Step 1: Encode and send USDT approve(vault, amount)
     - Step 2: Encode and send vault.deposit(amount)
     - Return both transaction hashes
     - _Requirements: 3.3, 3.4_
-  - [ ] 8.4 Update cashout API route
+  - [x] 8.4 Update cashout API route
+
+
     - Use WDK server (account index 1)
     - Query user's token balance
     - Encode and send vault.withdraw(balance)
     - Return transaction hash
     - _Requirements: 4.4_
-  - [ ] 8.5 Write property test for full cashout
+  - [x] 8.5 Write property test for full cashout
+
+
     - **Property 9: Cashout Withdraws Full Token Balance**
     - **Validates: Requirements 4.4**
-  - [ ] 8.6 Update balances API route
+  - [x] 8.6 Update balances API route
+
+
     - Query USDT balance from chain
     - Query Festival Token balance from chain
     - Query escrowedUSDT from Vault
     - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 9. Checkpoint - Ensure API integration tests pass
+- [x] 9. Checkpoint - Ensure API integration tests pass
+
+
+
+
+
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Update Frontend for blockchain integration
-  - [ ] 10.1 Update wallet page
+- [x] 10. Update Frontend for blockchain integration
+  - [x] 10.1 Update wallet page
     - Display on-chain USDT balance
     - Display on-chain Festival Token balance
     - Display locked USDT in Vault
@@ -235,16 +264,25 @@
     - Add Deposit button calling /api/festival/topup
     - Add Cash Out button calling /api/festival/cashout
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
-  - [ ] 10.2 Update admin page
+  - [x] 10.2 Update admin page
     - Display Token and Vault addresses after creation
     - Add Sepolia Etherscan links for contracts
     - _Requirements: 6.3_
-  - [ ] 10.3 Add Vault contract link to footer
+  - [x] 10.3 Add Vault contract link to footer
+
+
     - Display Etherscan link to Vault contract
     - _Requirements: 6.3_
 
-- [ ] 11. Create system verification script
-  - [ ] 11.1 Create verifySystem script (`scripts/verifySystem.ts`)
+- [x] 11. Create system verification script
+
+
+
+
+
+
+  - [x] 11.1 Create verifySystem script (`scripts/verifySystem.ts`)
+
     - Check Factory deployment on Sepolia
     - Check active Festival config
     - Check Vault USDT balance (Total Escrow)
@@ -252,8 +290,15 @@
     - Verify escrow invariant: Vault.usdtBalance == Token.totalSupply / 10^12
     - _Requirements: 8.1, 8.2, 8.3_
 
-- [ ] 12. Create README documentation
-  - [ ] 12.1 Write comprehensive README
+- [x] 12. Create README documentation
+
+
+
+
+
+
+  - [x] 12.1 Write comprehensive README
+
     - System overview and architecture
     - Setup instructions
     - Environment variables

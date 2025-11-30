@@ -690,3 +690,177 @@ describe("FestivalVault - Escrow Invariant", function () {
     });
   });
 });
+
+
+describe("FestivalVault - Full Cashout", function () {
+  let usdt: MockUSDT;
+  let token: FestivalToken;
+  let vault: FestivalVault;
+  let owner: HardhatEthersSigner;
+  let user: HardhatEthersSigner;
+
+  const DECIMAL_FACTOR = 10n ** 12n;
+  const ONE_DAY = 24 * 60 * 60;
+
+  /**
+   * **Feature: ethereum-sepolia-wallet, Property 9: Cashout Withdraws Full Token Balance**
+   * **Validates: Requirements 4.4**
+   * 
+   * *For any* user with a non-zero token balance, calling the cashout API SHALL result
+   * in the user's token balance becoming zero and their USDT balance increasing by
+   * the equivalent amount.
+   */
+  describe("Property 9: Cashout Withdraws Full Token Balance", function () {
+    beforeEach(async function () {
+      [owner, user] = await ethers.getSigners();
+
+      const MockUSDTFactory = await ethers.getContractFactory("MockUSDT");
+      usdt = await MockUSDTFactory.deploy();
+      await usdt.waitForDeployment();
+
+      const FestivalTokenFactory = await ethers.getContractFactory("FestivalToken");
+      token = await FestivalTokenFactory.deploy("Festival Token", "FEST", owner.address);
+      await token.waitForDeployment();
+
+      const now = await time.latest();
+      const FestivalVaultFactory = await ethers.getContractFactory("FestivalVault");
+      vault = await FestivalVaultFactory.deploy(
+        await usdt.getAddress(),
+        await token.getAddress(),
+        now,
+        now + ONE_DAY * 3,
+        owner.address
+      );
+      await vault.waitForDeployment();
+
+      await token.connect(owner).transferOwnership(await vault.getAddress());
+      await vault.connect(owner).setRedemptionOpen(true);
+    });
+
+    it("full withdrawal results in zero token balance", async function () {
+      // Setup: deposit some USDT
+      await usdt.mint(user.address, ethers.parseUnits("100", 6));
+      await usdt.connect(user).approve(await vault.getAddress(), ethers.parseUnits("100", 6));
+      await vault.connect(user).deposit(ethers.parseUnits("100", 6));
+
+      // Get full token balance
+      const fullTokenBalance = await token.balanceOf(user.address);
+      expect(fullTokenBalance).to.be.gt(0);
+
+      // Withdraw full balance (simulating cashout API behavior)
+      await vault.connect(user).withdraw(fullTokenBalance);
+
+      // Verify token balance is zero
+      expect(await token.balanceOf(user.address)).to.equal(0);
+    });
+
+    it("full withdrawal returns equivalent USDT amount", async function () {
+      const depositAmount = ethers.parseUnits("100", 6);
+      
+      await usdt.mint(user.address, depositAmount);
+      await usdt.connect(user).approve(await vault.getAddress(), depositAmount);
+      await vault.connect(user).deposit(depositAmount);
+
+      const usdtBefore = await usdt.balanceOf(user.address);
+      const fullTokenBalance = await token.balanceOf(user.address);
+      const expectedUsdt = fullTokenBalance / DECIMAL_FACTOR;
+
+      await vault.connect(user).withdraw(fullTokenBalance);
+
+      const usdtAfter = await usdt.balanceOf(user.address);
+      expect(usdtAfter - usdtBefore).to.equal(expectedUsdt);
+    });
+
+    it("full withdrawal clears escrowed balance", async function () {
+      await usdt.mint(user.address, ethers.parseUnits("100", 6));
+      await usdt.connect(user).approve(await vault.getAddress(), ethers.parseUnits("100", 6));
+      await vault.connect(user).deposit(ethers.parseUnits("100", 6));
+
+      const fullTokenBalance = await token.balanceOf(user.address);
+      await vault.connect(user).withdraw(fullTokenBalance);
+
+      expect(await vault.escrowedUSDT(user.address)).to.equal(0);
+    });
+
+    it("property: for any deposit amount, full withdrawal returns all USDT", async function () {
+      const testAmounts = [
+        ethers.parseUnits("1", 6),
+        ethers.parseUnits("10", 6),
+        ethers.parseUnits("100", 6),
+        ethers.parseUnits("1000", 6),
+        ethers.parseUnits("5000", 6),
+      ];
+
+      for (const depositAmount of testAmounts) {
+        // Fresh setup for each test
+        const MockUSDTFactory = await ethers.getContractFactory("MockUSDT");
+        const freshUsdt = await MockUSDTFactory.deploy();
+
+        const FestivalTokenFactory = await ethers.getContractFactory("FestivalToken");
+        const freshToken = await FestivalTokenFactory.deploy("Test", "TST", owner.address);
+
+        const now = await time.latest();
+        const FestivalVaultFactory = await ethers.getContractFactory("FestivalVault");
+        const freshVault = await FestivalVaultFactory.deploy(
+          await freshUsdt.getAddress(),
+          await freshToken.getAddress(),
+          now,
+          now + ONE_DAY,
+          owner.address
+        );
+
+        await freshToken.transferOwnership(await freshVault.getAddress());
+        await freshVault.connect(owner).setRedemptionOpen(true);
+
+        // Deposit
+        await freshUsdt.mint(user.address, depositAmount);
+        await freshUsdt.connect(user).approve(await freshVault.getAddress(), depositAmount);
+        await freshVault.connect(user).deposit(depositAmount);
+
+        // Record state before withdrawal
+        const usdtBefore = await freshUsdt.balanceOf(user.address);
+        const fullTokenBalance = await freshToken.balanceOf(user.address);
+
+        // Full withdrawal (cashout)
+        await freshVault.connect(user).withdraw(fullTokenBalance);
+
+        // Verify results
+        const usdtAfter = await freshUsdt.balanceOf(user.address);
+        
+        // Token balance should be zero
+        expect(await freshToken.balanceOf(user.address)).to.equal(0);
+        
+        // Escrowed balance should be zero
+        expect(await freshVault.escrowedUSDT(user.address)).to.equal(0);
+        
+        // USDT returned should equal original deposit
+        expect(usdtAfter - usdtBefore).to.equal(depositAmount);
+      }
+    });
+
+    it("property: full withdrawal after partial withdrawals returns remaining USDT", async function () {
+      const depositAmount = ethers.parseUnits("100", 6);
+      
+      await usdt.mint(user.address, depositAmount);
+      await usdt.connect(user).approve(await vault.getAddress(), depositAmount);
+      await vault.connect(user).deposit(depositAmount);
+
+      // Partial withdrawal
+      const partialWithdraw = ethers.parseUnits("30", 18);
+      await vault.connect(user).withdraw(partialWithdraw);
+
+      // Record state before full cashout
+      const usdtBefore = await usdt.balanceOf(user.address);
+      const remainingTokens = await token.balanceOf(user.address);
+      const expectedUsdt = remainingTokens / DECIMAL_FACTOR;
+
+      // Full cashout of remaining balance
+      await vault.connect(user).withdraw(remainingTokens);
+
+      // Verify
+      expect(await token.balanceOf(user.address)).to.equal(0);
+      expect(await vault.escrowedUSDT(user.address)).to.equal(0);
+      expect(await usdt.balanceOf(user.address) - usdtBefore).to.equal(expectedUsdt);
+    });
+  });
+});

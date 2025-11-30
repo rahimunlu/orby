@@ -1,0 +1,13 @@
+{
+  "name": "Orby Festival Token",
+  "symbol": "OFT",
+  "tokenAddress": "0x5ea6c8f79943148811f8CFCc0CC4DdFd66518E53",
+  "vaultAddress": "0x559504A83Cc1cFb3f096568AB7E8b7eC0AC94793",
+  "factoryAddress": "0x73eA5768CF25b4D9Ee342A364948543E202C2D8d",
+  "ownerAddress": "0x9F0dfC9b803EF2Ad1885f5C0C2d0c552B2616c34",
+  "startTime": 1764465460,
+  "endTime": 1764724660,
+  "createdAt": "2025-11-30T01:19:10.699Z",
+  "network": "sepolia",
+  "chainId": 11155111
+}

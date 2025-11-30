@@ -4,8 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import type { FestivalConfig } from '@orby/types';
-import { ArrowLeft, Rocket, CheckCircle, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Rocket, CheckCircle, ExternalLink, Copy, Check } from 'lucide-react';
 
+const SEPOLIA_ETHERSCAN_BASE = 'https://sepolia.etherscan.io/address/';
+
+/**
+ * Admin Page
+ * 
+ * Displays Token and Vault addresses after creation with Sepolia Etherscan links.
+ * Requirements: 6.3
+ */
 export default function AdminPage() {
   const router = useRouter();
   const [festival, setFestival] = useState<FestivalConfig | null>(null);
@@ -15,6 +23,9 @@ export default function AdminPage() {
   const [name, setName] = useState('');
   const [symbol, setSymbol] = useState('');
   const [deploying, setDeploying] = useState(false);
+  
+  // Copy state
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -42,6 +53,64 @@ export default function AdminPage() {
     }
   };
 
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const AddressDisplay = ({ 
+    label, 
+    address, 
+    fieldId,
+    showEtherscan = true 
+  }: { 
+    label: string; 
+    address: string; 
+    fieldId: string;
+    showEtherscan?: boolean;
+  }) => (
+    <div>
+      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-sans">
+        {label}
+      </label>
+      <div className="bg-black p-3 rounded-lg mt-1 flex items-center justify-between gap-2">
+        <span className="break-all font-mono text-xs text-orby flex-1">
+          {address}
+        </span>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            onClick={() => copyToClipboard(address, fieldId)}
+            className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors"
+            title="Copy address"
+          >
+            {copiedField === fieldId ? (
+              <Check size={14} className="text-green-500" />
+            ) : (
+              <Copy size={14} className="text-zinc-500" />
+            )}
+          </button>
+          {showEtherscan && (
+            <a
+              href={`${SEPOLIA_ETHERSCAN_BASE}${address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-md hover:bg-zinc-800 transition-colors"
+              title="View on Etherscan"
+            >
+              <ExternalLink size={14} className="text-zinc-500 hover:text-orby" />
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-6 pb-32">
       {/* Header */}
@@ -63,7 +132,7 @@ export default function AdminPage() {
           <div className="w-8 h-8 border-4 border-orby border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : festival ? (
-        // Existing Festival View
+        // Existing Festival View with Token and Vault addresses (Requirement 6.3)
         <div className="animate-fade-in-up">
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6">
             <div className="flex items-center gap-3 mb-6">
@@ -72,38 +141,90 @@ export default function AdminPage() {
               </div>
               <div>
                 <h2 className="font-bold text-lg font-display tracking-tight">Active Festival</h2>
-                <p className="text-sm text-zinc-400 font-sans">Token deployed successfully</p>
+                <p className="text-sm text-zinc-400 font-sans">Contracts deployed on Sepolia</p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-sans">Name</label>
-                <p className="text-xl font-bold font-display">{festival.name}</p>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-sans">Symbol</label>
-                <p className="text-xl font-bold font-display">{festival.symbol}</p>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-sans">
-                  Contract Address
-                </label>
-                <div className="bg-black p-3 rounded-lg mt-1 break-all font-mono text-xs text-orby">
-                  {festival.tokenAddress}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-sans">Name</label>
+                  <p className="text-xl font-bold font-display">{festival.name}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-sans">Symbol</label>
+                  <p className="text-xl font-bold font-display">{festival.symbol}</p>
                 </div>
               </div>
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-sans">Owner</label>
-                <div className="bg-black p-3 rounded-lg mt-1 break-all font-mono text-xs text-zinc-400">
-                  {festival.ownerAddress}
-                </div>
-              </div>
+              
+              {/* Token Address with Etherscan link (Requirement 6.3) */}
+              <AddressDisplay 
+                label="Token Contract" 
+                address={festival.tokenAddress} 
+                fieldId="token"
+              />
+              
+              {/* Vault Address with Etherscan link (Requirement 6.3) */}
+              <AddressDisplay 
+                label="Vault Contract" 
+                address={festival.vaultAddress} 
+                fieldId="vault"
+              />
+              
+              {/* Owner Address */}
+              <AddressDisplay 
+                label="Owner Address" 
+                address={festival.ownerAddress} 
+                fieldId="owner"
+              />
+
+              {/* Factory Address */}
+              {festival.factoryAddress && (
+                <AddressDisplay 
+                  label="Factory Contract" 
+                  address={festival.factoryAddress} 
+                  fieldId="factory"
+                />
+              )}
             </div>
 
-            <button className="w-full mt-8 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-sans uppercase text-sm tracking-wide">
-              View in Explorer <ExternalLink size={16} />
-            </button>
+
+            {/* Quick Links to Etherscan */}
+            <div className="mt-6 pt-6 border-t border-zinc-800">
+              <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider font-sans mb-3 block">
+                Quick Links
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <a
+                  href={`${SEPOLIA_ETHERSCAN_BASE}${festival.tokenAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-zinc-800 hover:bg-zinc-700 py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-sans text-sm"
+                >
+                  Token <ExternalLink size={14} />
+                </a>
+                <a
+                  href={`${SEPOLIA_ETHERSCAN_BASE}${festival.vaultAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-zinc-800 hover:bg-zinc-700 py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors font-sans text-sm"
+                >
+                  Vault <ExternalLink size={14} />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Network Info */}
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-zinc-500 font-sans uppercase tracking-wider">Network</span>
+              <span className="text-sm font-bold text-orby">Sepolia Testnet</span>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-zinc-500 font-sans uppercase tracking-wider">Chain ID</span>
+              <span className="text-sm font-mono text-zinc-400">11155111</span>
+            </div>
           </div>
         </div>
       ) : (
@@ -111,7 +232,7 @@ export default function AdminPage() {
         <div className="animate-fade-in-up">
           <div className="bg-orby rounded-3xl p-6 mb-6 text-black">
             <h2 className="text-3xl font-display font-black mb-2 tracking-tight">Create Token</h2>
-            <p className="opacity-70 font-medium mb-6 font-sans">Deploy a new festival currency on-chain.</p>
+            <p className="opacity-70 font-medium mb-6 font-sans">Deploy a new festival currency on Sepolia.</p>
 
             <form onSubmit={handleDeploy} className="space-y-4">
               <div>
@@ -152,7 +273,7 @@ export default function AdminPage() {
                 {deploying ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{' '}
-                    Deploying...
+                    Deploying to Sepolia...
                   </>
                 ) : (
                   <>
@@ -161,6 +282,14 @@ export default function AdminPage() {
                 )}
               </button>
             </form>
+          </div>
+
+          {/* Network Info */}
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-zinc-500 font-sans uppercase tracking-wider">Target Network</span>
+              <span className="text-sm font-bold text-orby">Sepolia Testnet</span>
+            </div>
           </div>
         </div>
       )}
