@@ -1,17 +1,39 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { session } from '@/lib/session';
+import { wdkClient } from '@/lib/wdk/client';
 import type { UserBalance, FestivalConfig } from '@orby/types';
 import { ArrowUpRight, Plus, RefreshCw } from 'lucide-react';
 import Layout from '@/components/Layout';
 
+/**
+ * Wallet Page
+ * 
+ * Displays user balances and provides deposit/request actions.
+ * Redirects to /login if no wallet exists (Requirement 1.4)
+ */
 export default function WalletPage() {
+  const router = useRouter();
   const [balance, setBalance] = useState<UserBalance | null>(null);
   const [festival, setFestival] = useState<FestivalConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [toppingUp, setToppingUp] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check wallet initialization state and redirect if no wallet (Requirement 1.4)
+  useEffect(() => {
+    const checkAuth = () => {
+      if (!wdkClient.hasWallet()) {
+        router.push('/login');
+        return;
+      }
+      setCheckingAuth(false);
+    };
+    checkAuth();
+  }, [router]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -34,8 +56,10 @@ export default function WalletPage() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!checkingAuth) {
+      fetchData();
+    }
+  }, [checkingAuth]);
 
   const handleTopUp = async () => {
     if (toppingUp) return;
@@ -73,6 +97,15 @@ export default function WalletPage() {
     : '0';
 
   const displayUsdtBalance = balance ? (parseFloat(balance.usdt) / 1e6).toFixed(2) : '0.00';
+
+  // Show loading while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-orby flex items-center justify-center">
+        <RefreshCw className="animate-spin text-white" size={32} />
+      </div>
+    );
+  }
 
   return (
     <Layout bgClass="bg-orby">

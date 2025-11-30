@@ -1,55 +1,112 @@
 {
   "pages": {
-    "/api/festival/topup/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/festival/topup/route.js"
-    ],
-    "/api/festival/balances/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/festival/balances/route.js"
-    ],
-    "/api/admin/festival/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/festival/route.js"
+    "/_not-found/page": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/_not-found/page-7af155c85bd44e72.js"
     ],
     "/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/layout.css",
-      "static/chunks/app/layout.js"
-    ],
-    "/wallet/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/wallet/page.js"
-    ],
-    "/menu/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/menu/page.js"
-    ],
-    "/admin/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/page.js"
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/css/cbb657659a1b4840.css",
+      "static/chunks/app/layout-828ed7ec1650a08c.js"
     ],
     "/api/admin/create-festival/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/create-festival/route.js"
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/api/admin/create-festival/route-31d28c50e2d257a0.js"
+    ],
+    "/api/festival/balances/route": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/api/festival/balances/route-31d28c50e2d257a0.js"
+    ],
+    "/api/festival/cashout/route": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/api/festival/cashout/route-31d28c50e2d257a0.js"
+    ],
+    "/api/admin/festival/route": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/api/admin/festival/route-31d28c50e2d257a0.js"
+    ],
+    "/api/festival/join/route": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/api/festival/join/route-31d28c50e2d257a0.js"
+    ],
+    "/api/festival/topup/route": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/api/festival/topup/route-31d28c50e2d257a0.js"
     ],
     "/activity/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/activity/page.js"
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/activity/page-d62f5354e642a852.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/page-31d28c50e2d257a0.js"
+    ],
+    "/admin/page": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/admin/page-ace9112c7d6dfc2e.js"
+    ],
+    "/login/page": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/366-3a472cc4e48ae47c.js",
+      "static/chunks/app/login/page-c89eb5d079482367.js"
+    ],
+    "/menu/page": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/menu/page-1945eb74c42914f8.js"
     ],
     "/qr/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/qr/page.js"
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/app/qr/page-f0dc1226b7e8b5a7.js"
+    ],
+    "/wallet/page": [
+      "static/chunks/webpack-59da9f9fab2dde8f.js",
+      "static/chunks/bc7edd46-a5d8190def40b60b.js",
+      "static/chunks/540-736a68c46984c5d9.js",
+      "static/chunks/main-app-e05bc97454a98c65.js",
+      "static/chunks/366-3a472cc4e48ae47c.js",
+      "static/chunks/app/wallet/page-7cbeb2453869bff5.js"
     ]
   }
 }
