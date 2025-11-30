@@ -27,6 +27,8 @@ export default function WalletPage() {
   const [cashingOut, setCashingOut] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [depositAmount, setDepositAmount] = useState<number>(10);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [customAmount, setCustomAmount] = useState('');
 
   // Check wallet initialization state and redirect if no wallet (Requirement 1.4)
   useEffect(() => {
@@ -132,18 +134,22 @@ export default function WalletPage() {
     setTimeout(() => toast.remove(), 4000);
   };
 
-  // Format balances for display
-  const displayTokenBalance = balance
+  // Format balances for display (with NaN protection)
+  const displayTokenBalance = balance && balance.festivalTokens && !isNaN(parseFloat(balance.festivalTokens))
     ? (parseFloat(balance.festivalTokens) / 1e18).toLocaleString('en-US', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       })
     : '0';
 
-  const displayUsdtBalance = balance ? (parseFloat(balance.usdt) / 1e6).toFixed(2) : '0.00';
+  const displayUsdtBalance = balance && balance.usdt && !isNaN(parseFloat(balance.usdt)) 
+    ? (parseFloat(balance.usdt) / 1e6).toFixed(2) 
+    : '0.00';
   
   // Display locked USDT in Vault (Requirement 5.3)
-  const displayLockedUsdt = balance ? (parseFloat(balance.escrowedUSDT) / 1e6).toFixed(2) : '0.00';
+  const displayLockedUsdt = balance && balance.escrowedUSDT && !isNaN(parseFloat(balance.escrowedUSDT)) 
+    ? (parseFloat(balance.escrowedUSDT) / 1e6).toFixed(2) 
+    : '0.00';
 
   // Determine redemption status (Requirement 5.4)
   const isRedemptionOpen = festival?.redemptionOpen || (festival && festival.endTime <= Date.now() / 1000);
@@ -219,41 +225,19 @@ export default function WalletPage() {
         </div>
 
 
-        {/* Deposit Amount Selector */}
-        <div className="mb-4 animate-fade-in-up delay-150">
-          <label className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2 block">
-            Deposit Amount (USDT)
-          </label>
-          <div className="flex gap-2">
-            {[10, 25, 50, 100].map((amount) => (
-              <button
-                key={amount}
-                onClick={() => setDepositAmount(amount)}
-                className={`flex-1 py-2 rounded-xl font-bold text-sm transition-all ${
-                  depositAmount === amount
-                    ? 'bg-white text-black'
-                    : 'bg-black/20 text-white/80 border border-white/10 hover:bg-black/30'
-                }`}
-              >
-                ${amount}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Action Cards */}
         <div className="grid grid-cols-2 gap-4 mt-auto mb-4 w-full">
-          {/* Deposit Button - calls /api/festival/topup */}
+          {/* Deposit Button - opens modal */}
           <button
-            onClick={handleTopUp}
-            disabled={toppingUp || depositAmount <= 0}
+            onClick={() => setShowDepositModal(true)}
+            disabled={toppingUp}
             className="bg-black hover:bg-zinc-900 active:scale-95 transition-all duration-300 text-white rounded-[32px] p-6 h-40 flex flex-col justify-between relative overflow-hidden group shadow-lg animate-fade-in-up delay-200 border border-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="absolute top-0 right-0 p-5 group-hover:rotate-90 transition-transform duration-300">
               <Plus size={28} className="text-orby" />
             </div>
             <div className="mt-auto relative z-10">
-              <span className="text-xs text-white/60 block mb-1">${depositAmount} USDT</span>
+              <span className="text-xs text-white/60 block mb-1">Add USDT</span>
               <span className="text-2xl font-display font-bold tracking-tight block group-hover:translate-x-1 transition-transform">
                 {toppingUp ? 'ADDING...' : 'DEPOSIT'}
               </span>
@@ -285,6 +269,48 @@ export default function WalletPage() {
             </div>
           </button>
         </div>
+
+        {/* Deposit Modal */}
+        {showDepositModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-zinc-900 rounded-3xl p-6 w-80 border border-white/10">
+              <h3 className="text-white font-bold text-lg mb-4">Deposit USDT</h3>
+              <input
+                type="number"
+                value={customAmount}
+                onChange={(e) => setCustomAmount(e.target.value)}
+                placeholder="Enter amount"
+                className="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white mb-4 focus:outline-none focus:border-orby"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDepositModal(false);
+                    setCustomAmount('');
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-white/10 text-white font-bold hover:bg-white/20 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const amount = parseFloat(customAmount);
+                    if (amount > 0) {
+                      setDepositAmount(amount);
+                      setShowDepositModal(false);
+                      setCustomAmount('');
+                      handleTopUp();
+                    }
+                  }}
+                  disabled={!customAmount || parseFloat(customAmount) <= 0}
+                  className="flex-1 py-3 rounded-xl bg-orby text-white font-bold hover:bg-orby/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Deposit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Vault Info Link */}
         {festival?.vaultAddress && (

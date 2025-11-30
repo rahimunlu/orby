@@ -1,21 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { Scan, QrCode as QrIcon } from 'lucide-react';
+import { Html5Qrcode } from 'html5-qrcode';
 
 export default function QrPage() {
   const [mode, setMode] = useState<'MY_QR' | 'SCAN'>('MY_QR');
   const [address] = useState<string>('0x1234...5678');
   const [cameraActive, setCameraActive] = useState(false);
+  const [scannedResult, setScannedResult] = useState<string | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   const handleScanClick = () => {
     setMode('SCAN');
   };
 
-  const handleCameraPermission = () => {
-    setCameraActive(true);
+  const stopCamera = async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current.clear();
+      } catch (e) {
+        console.error('Error stopping camera:', e);
+      }
+      scannerRef.current = null;
+    }
   };
+
+  const handleCameraPermission = async () => {
+    setCameraActive(true);
+    setScannedResult(null);
+
+    // Wait for DOM to render the qr-reader element
+    setTimeout(async () => {
+      try {
+        const html5QrCode = new Html5Qrcode('qr-reader');
+        scannerRef.current = html5QrCode;
+
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          (decodedText) => {
+            setScannedResult(decodedText);
+            stopCamera();
+          },
+          () => {
+            // QR code not found - ignore
+          }
+        );
+      } catch (err) {
+        console.error('Camera error:', err);
+        setCameraActive(false);
+      }
+    }, 100);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
 
   if (mode === 'SCAN' && !cameraActive) {
     return (
@@ -48,29 +97,27 @@ export default function QrPage() {
   if (mode === 'SCAN' && cameraActive) {
     return (
       <Layout hideNav>
-        <div className="min-h-screen bg-black relative">
-          {/* Fake Camera View */}
-          <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
-            <p className="text-zinc-600 animate-pulse font-mono">Camera Active...</p>
-          </div>
-
-          {/* Overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <div className="w-64 h-64 border-2 border-orby rounded-3xl relative">
-              <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-orby -mt-1 -ml-1"></div>
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-orby -mt-1 -mr-1"></div>
-              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-orby -mb-1 -ml-1"></div>
-              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-orby -mb-1 -mr-1"></div>
-            </div>
-            <p className="mt-8 text-white font-bold bg-black/50 px-6 py-2 rounded-full backdrop-blur-md font-sans">
-              Scanning...
-            </p>
+        <div className="min-h-screen bg-black relative flex flex-col">
+          {/* Camera View */}
+          <div className="flex-1 flex items-center justify-center relative">
+            {scannedResult ? (
+              <div className="text-center p-6">
+                <p className="text-green-400 font-bold text-lg mb-4">QR Code Scanned!</p>
+                <p className="text-white font-mono text-sm bg-zinc-800 p-4 rounded-xl break-all">
+                  {scannedResult}
+                </p>
+              </div>
+            ) : (
+              <div id="qr-reader" className="w-full max-w-sm"></div>
+            )}
           </div>
 
           <button
-            onClick={() => {
+            onClick={async () => {
+              await stopCamera();
               setMode('MY_QR');
               setCameraActive(false);
+              setScannedResult(null);
             }}
             className="absolute bottom-12 left-1/2 transform -translate-x-1/2 text-white font-bold bg-zinc-800/80 px-6 py-3 rounded-full backdrop-blur font-sans hover:bg-zinc-700 transition-colors"
           >
