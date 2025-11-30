@@ -1,16 +1,17 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/api/admin/create-festival/route": "app/api/admin/create-festival/route.js",
+  "/api/admin/faucet/route": "app/api/admin/faucet/route.js",
+  "/api/admin/festival/route": "app/api/admin/festival/route.js",
   "/api/festival/balances/route": "app/api/festival/balances/route.js",
   "/api/festival/cashout/route": "app/api/festival/cashout/route.js",
   "/api/festival/join/route": "app/api/festival/join/route.js",
   "/api/festival/topup/route": "app/api/festival/topup/route.js",
-  "/api/admin/festival/route": "app/api/admin/festival/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/page": "app/page.js",
-  "/login/page": "app/login/page.js",
   "/activity/page": "app/activity/page.js",
+  "/login/page": "app/login/page.js",
+  "/menu/page": "app/menu/page.js",
   "/qr/page": "app/qr/page.js",
-  "/wallet/page": "app/wallet/page.js",
+  "/page": "app/page.js",
   "/admin/page": "app/admin/page.js",
-  "/menu/page": "app/menu/page.js"
+  "/wallet/page": "app/wallet/page.js"
 }
