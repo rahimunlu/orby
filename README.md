@@ -75,7 +75,7 @@ WDK enables Orby to provide a seamless Web2-like experience while maintaining fu
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 💡 The Genius: Self-Backing Vault Architecture
+## 💡 Self-Backing Vault Architecture
 
 Traditional festival token systems require organizers to:
 1. Create a separate **Liquidity Pool** (expensive, complex)
@@ -119,7 +119,7 @@ Traditional festival token systems require organizers to:
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Why This Architecture is Brilliant
+### Why This Architecture
 
 | Traditional LP Approach | Orby Vault Approach |
 |------------------------|---------------------|
