@@ -156,10 +156,26 @@ This design means **any festival organizer can launch their own token economy in
 
 | Contract | Address | Etherscan |
 |----------|---------|-----------|
-| FestivalFactory | `0x73eA5768CF25b4D9Ee342A364948543E202C2D8d` | [View ↗](https://sepolia.etherscan.io/address/0x73eA5768CF25b4D9Ee342A364948543E202C2D8d) |
-| FestivalToken | `0x5ea6c8f79943148811f8CFCc0CC4DdFd66518E53` | [View ↗](https://sepolia.etherscan.io/address/0x5ea6c8f79943148811f8CFCc0CC4DdFd66518E53) |
-| FestivalVault | `0x559504A83Cc1cFb3f096568AB7E8b7eC0AC94793` | [View ↗](https://sepolia.etherscan.io/address/0x559504A83Cc1cFb3f096568AB7E8b7eC0AC94793) |
-| USDT (Sepolia) | `0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0` | [View ↗](https://sepolia.etherscan.io/address/0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0) |
+| TestUSDT | `0xD630eb858fA2b08bc816aF83a480eeF4Cc23f843` | [View ↗](https://sepolia.etherscan.io/address/0xD630eb858fA2b08bc816aF83a480eeF4Cc23f843) |
+| FestivalFactory | `0xA0129c4cFE46e53f532ee7F7B9fF4FdeaB832a62` | [View ↗](https://sepolia.etherscan.io/address/0xA0129c4cFE46e53f532ee7F7B9fF4FdeaB832a62) |
+| FestivalToken | `0x506bb9654757044a224E642598C5c30B43b30568` | [View ↗](https://sepolia.etherscan.io/address/0x506bb9654757044a224E642598C5c30B43b30568) |
+| FestivalVault | `0x9965867dC3EEfb856634d4B7aB160f8654402A5b` | [View ↗](https://sepolia.etherscan.io/address/0x9965867dC3EEfb856634d4B7aB160f8654402A5b) |
+
+> **Note:** TestUSDT is a custom ERC20 token (6 decimals) deployed for testing. It includes a `faucet()` function for minting test tokens. All contracts are verified on Etherscan.
+
+### Contract Verification
+
+To verify contracts on Etherscan:
+
+```bash
+cd packages/contracts
+
+# Set your Etherscan API key in .env
+# ETHERSCAN_API_KEY=your_api_key
+
+# Verify a contract
+npx hardhat verify --network sepolia <CONTRACT_ADDRESS>
+```
 
 ## Tech Stack
 
@@ -215,18 +231,18 @@ pnpm install
 Create `.env.local` in `apps/web/`:
 
 ```bash
-# Sepolia RPC URL (required)
-SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
-NEXT_PUBLIC_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+# Sepolia Network
+NEXT_PUBLIC_CHAIN_ID=11155111
+NEXT_PUBLIC_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
 
-# WDK seed phrase for server-side transactions (required)
-WDK_SEED_PHRASE="your twelve word mnemonic phrase here"
+# Contract Addresses (Sepolia)
+NEXT_PUBLIC_TESTUSDT_ADDRESS=0xD630eb858fA2b08bc816aF83a480eeF4Cc23f843
+NEXT_PUBLIC_FACTORY_ADDRESS=0xA0129c4cFE46e53f532ee7F7B9fF4FdeaB832a62
+NEXT_PUBLIC_FESTIVAL_TOKEN_ADDRESS=0x506bb9654757044a224E642598C5c30B43b30568
+NEXT_PUBLIC_FESTIVAL_VAULT_ADDRESS=0x9965867dC3EEfb856634d4B7aB160f8654402A5b
 
-# Contract addresses (use deployed addresses or deploy your own)
-FACTORY_ADDRESS=0x73eA5768CF25b4D9Ee342A364948543E202C2D8d
-TOKEN_ADDRESS=0x5ea6c8f79943148811f8CFCc0CC4DdFd66518E53
-VAULT_ADDRESS=0x559504A83Cc1cFb3f096568AB7E8b7eC0AC94793
-USDT_ADDRESS=0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0
+# Server-side only (for signing transactions)
+PRIVATE_KEY=your_private_key_here
 ```
 
 Create `.env` in `packages/contracts/`:
@@ -238,8 +254,15 @@ PRIVATE_KEY=your_private_key_here
 # Sepolia RPC URL
 SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
 
-# Factory address (after deployment)
-FESTIVAL_FACTORY_ADDRESS=0x73eA5768CF25b4D9Ee342A364948543E202C2D8d
+# TestUSDT (custom test token)
+TESTUSDT_ADDRESS=0xD630eb858fA2b08bc816aF83a480eeF4Cc23f843
+
+# Factory
+FESTIVAL_FACTORY_ADDRESS=0xA0129c4cFE46e53f532ee7F7B9fF4FdeaB832a62
+
+# Festival Token & Vault
+FESTIVAL_TOKEN_ADDRESS=0x506bb9654757044a224E642598C5c30B43b30568
+FESTIVAL_VAULT_ADDRESS=0x9965867dC3EEfb856634d4B7aB160f8654402A5b
 ```
 
 ### 3. Run Development Server
@@ -256,13 +279,13 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SEPOLIA_RPC_URL` | Yes | Sepolia RPC endpoint for server-side calls |
-| `NEXT_PUBLIC_SEPOLIA_RPC_URL` | Yes | Sepolia RPC endpoint for client-side calls |
-| `WDK_SEED_PHRASE` | Yes | BIP-39 mnemonic for server wallet (12 words) |
-| `FACTORY_ADDRESS` | No | FestivalFactory contract address |
-| `TOKEN_ADDRESS` | No | FestivalToken contract address |
-| `VAULT_ADDRESS` | No | FestivalVault contract address |
-| `USDT_ADDRESS` | No | Sepolia USDT address (default: `0xaa8e...d0`) |
+| `NEXT_PUBLIC_CHAIN_ID` | Yes | Sepolia chain ID (11155111) |
+| `NEXT_PUBLIC_RPC_URL` | Yes | Sepolia RPC endpoint |
+| `NEXT_PUBLIC_TESTUSDT_ADDRESS` | Yes | TestUSDT contract address |
+| `NEXT_PUBLIC_FACTORY_ADDRESS` | Yes | FestivalFactory contract address |
+| `NEXT_PUBLIC_FESTIVAL_TOKEN_ADDRESS` | Yes | FestivalToken contract address |
+| `NEXT_PUBLIC_FESTIVAL_VAULT_ADDRESS` | Yes | FestivalVault contract address |
+| `PRIVATE_KEY` | Yes | Private key for server-side transactions |
 
 ### Contracts (`packages/contracts/.env`)
 
@@ -270,7 +293,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 |----------|----------|-------------|
 | `PRIVATE_KEY` | Yes | Deployer wallet private key |
 | `SEPOLIA_RPC_URL` | Yes | Sepolia RPC endpoint |
-| `FESTIVAL_FACTORY_ADDRESS` | No | Deployed factory address |
+| `TESTUSDT_ADDRESS` | Yes | TestUSDT contract address |
+| `FESTIVAL_FACTORY_ADDRESS` | Yes | Deployed factory address |
+| `FESTIVAL_TOKEN_ADDRESS` | Yes | FestivalToken contract address |
+| `FESTIVAL_VAULT_ADDRESS` | Yes | FestivalVault contract address |
 
 ## Deployment Guide
 

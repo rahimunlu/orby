@@ -5,3 +5,4 @@ export * as mocks from "./mocks";
 export { FestivalFactory__factory } from "./FestivalFactory__factory";
 export { FestivalToken__factory } from "./FestivalToken__factory";
 export { FestivalVault__factory } from "./FestivalVault__factory";
+export { TestUSDT__factory } from "./TestUSDT__factory";

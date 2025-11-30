@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { createPublicClient, http, type Address } from 'viem';
 import { sepolia } from 'viem/chains';
-import { wdkServer, ACCOUNT_INDEX, SEPOLIA_CONFIG } from '@/lib/wdk/server';
+import { SEPOLIA_CONFIG } from '@/lib/wdk/server';
 import { ERC20_ABI, FESTIVAL_VAULT_ABI } from '@/lib/wdk/encoding';
 import type { UserBalance } from '@orby/types';
 
-// Contract addresses from config
-const USDT_ADDRESS = process.env.USDT_ADDRESS || '0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0';
-const TOKEN_ADDRESS = process.env.TOKEN_ADDRESS || '0x5ea6c8f79943148811f8CFCc0CC4DdFd66518E53';
-const VAULT_ADDRESS = process.env.VAULT_ADDRESS || '0x559504A83Cc1cFb3f096568AB7E8b7eC0AC94793';
+// Contract addresses from environment
+const USDT_ADDRESS = process.env.NEXT_PUBLIC_TESTUSDT_ADDRESS || process.env.USDT_ADDRESS;
+const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_FESTIVAL_TOKEN_ADDRESS || process.env.TOKEN_ADDRESS;
+const VAULT_ADDRESS = process.env.NEXT_PUBLIC_FESTIVAL_VAULT_ADDRESS || process.env.VAULT_ADDRESS;
+
+if (!USDT_ADDRESS || !TOKEN_ADDRESS || !VAULT_ADDRESS) {
+  console.warn('Warning: Contract addresses not fully configured in environment');
+}
 
 /**
  * GET /api/festival/balances
@@ -18,16 +22,26 @@ const VAULT_ADDRESS = process.env.VAULT_ADDRESS || '0x559504A83Cc1cFb3f096568AB7
  * - Festival Token balance
  * - Escrowed USDT in Vault
  * 
+ * Now accepts userAddress as query param (derived from user's seed on client)
+ * 
  * Requirements: 5.1, 5.2, 5.3
  */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const userAddress = searchParams.get('userAddress');
 
     if (!userId) {
       return NextResponse.json(
         { error: 'userId is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!userAddress) {
+      return NextResponse.json(
+        { error: 'userAddress is required' },
         { status: 400 }
       );
     }
@@ -38,15 +52,12 @@ export async function GET(request: Request) {
       transport: http(SEPOLIA_CONFIG.rpcUrl),
     });
 
-    // Get user's address (demo user account)
-    const userAddress = await wdkServer.getAddress(ACCOUNT_INDEX.DEMO_USER);
-
     // Query USDT balance from chain
     const usdtBalance = await publicClient.readContract({
       address: USDT_ADDRESS as Address,
       abi: ERC20_ABI,
       functionName: 'balanceOf',
-      args: [userAddress],
+      args: [userAddress as Address],
     }) as bigint;
 
     // Query Festival Token balance from chain
@@ -54,7 +65,7 @@ export async function GET(request: Request) {
       address: TOKEN_ADDRESS as Address,
       abi: ERC20_ABI,
       functionName: 'balanceOf',
-      args: [userAddress],
+      args: [userAddress as Address],
     }) as bigint;
 
     // Query escrowedUSDT from Vault
@@ -62,7 +73,7 @@ export async function GET(request: Request) {
       address: VAULT_ADDRESS as Address,
       abi: FESTIVAL_VAULT_ABI,
       functionName: 'escrowedUSDT',
-      args: [userAddress],
+      args: [userAddress as Address],
     }) as bigint;
 
     const response: UserBalance = {
@@ -70,7 +81,7 @@ export async function GET(request: Request) {
       festivalTokens: tokenBalance.toString(),
       escrowedUSDT: escrowedUSDT.toString(),
       userAddress,
-      treasuryAddress: VAULT_ADDRESS,
+      treasuryAddress: VAULT_ADDRESS || '',
     };
 
     return NextResponse.json(response);

@@ -570,6 +570,45 @@
       "artifacts": [
         "FestivalFactory"
       ]
+    },
+    "E:\\Kiro\\orby\\orby\\packages\\contracts\\contracts\\TestUSDT.sol": {
+      "lastModificationDate": 1764488677016,
+      "contentHash": "6b8fb559df7c392d749bb5867df69a05",
+      "sourceName": "contracts/TestUSDT.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "TestUSDT"
+      ]
     }
   }
 }

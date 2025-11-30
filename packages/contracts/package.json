@@ -5,6 +5,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
+    "deploy:testusdt": "hardhat run scripts/deployTestUSDT.ts --network sepolia",
     "deploy:factory": "hardhat run scripts/deployFactory.ts --network sepolia",
     "create:festival": "hardhat run scripts/createFestival.ts --network sepolia",
     "test:flow": "hardhat run scripts/testFlow.ts --network sepolia",

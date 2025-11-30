@@ -34,3 +34,5 @@ export type { FestivalVault } from "./contracts/FestivalVault";
 export { FestivalVault__factory } from "./factories/contracts/FestivalVault__factory";
 export type { MockUSDT } from "./contracts/mocks/MockUSDT";
 export { MockUSDT__factory } from "./factories/contracts/mocks/MockUSDT__factory";
+export type { TestUSDT } from "./contracts/TestUSDT";
+export { TestUSDT__factory } from "./factories/contracts/TestUSDT__factory";

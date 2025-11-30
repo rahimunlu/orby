@@ -6,3 +6,4 @@ export type { mocks };
 export type { FestivalFactory } from "./FestivalFactory";
 export type { FestivalToken } from "./FestivalToken";
 export type { FestivalVault } from "./FestivalVault";
+export type { TestUSDT } from "./TestUSDT";

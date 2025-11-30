@@ -139,6 +139,21 @@ export const FESTIVAL_VAULT_ABI = [
   },
 ] as const;
 
+// TestUSDT ABI (for faucet function)
+export const TESTUSDT_ABI = [
+  ...ERC20_ABI,
+  {
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    name: 'faucet',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+] as const;
+
 // FestivalToken ABI (extends ERC20)
 export const FESTIVAL_TOKEN_ABI = [
   ...ERC20_ABI,
@@ -247,6 +262,21 @@ export const contractEncoders = {
       abi: FESTIVAL_VAULT_ABI,
       functionName: 'setRedemptionOpen',
       args: [open],
+    });
+  },
+
+  /**
+   * Encode TestUSDT.faucet call
+   * 
+   * @param to - Address to receive tokens
+   * @param amount - Amount to mint (6 decimals)
+   * @returns Encoded function data
+   */
+  encodeFaucet(to: Address, amount: bigint): Hex {
+    return encodeFunctionData({
+      abi: TESTUSDT_ABI,
+      functionName: 'faucet',
+      args: [to, amount],
     });
   },
 };

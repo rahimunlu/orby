@@ -28,8 +28,19 @@ async function main() {
     );
   }
 
-  // Sepolia USDT address
-  const SEPOLIA_USDT_ADDRESS = "0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0";
+  // TestUSDT address from environment or config
+  let SEPOLIA_USDT_ADDRESS = process.env.TESTUSDT_ADDRESS;
+  if (!SEPOLIA_USDT_ADDRESS && fs.existsSync(configPath)) {
+    // Fallback: try testusdt-address.json
+    const testusdtPath = path.join(__dirname, "..", "testusdt-address.json");
+    if (fs.existsSync(testusdtPath)) {
+      const testusdtConfig = JSON.parse(fs.readFileSync(testusdtPath, "utf-8"));
+      SEPOLIA_USDT_ADDRESS = testusdtConfig.address;
+    }
+  }
+  if (!SEPOLIA_USDT_ADDRESS) {
+    throw new Error("TESTUSDT_ADDRESS must be set in environment or testusdt-address.json must exist.");
+  }
 
   console.log("Testing deposit and withdrawal flow...");
   console.log("Token address:", tokenAddress);

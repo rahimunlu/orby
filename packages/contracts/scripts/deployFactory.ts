@@ -1,18 +1,30 @@
 import { ethers } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Deploy FestivalFactory to Sepolia
  * 
  * Requirements: 7.1, 7.4
  * - Deploy FestivalFactory to Sepolia and log the contract address
- * - Use the official Sepolia USDT address
+ * - Use TestUSDT address from testusdt-address.json or env
  */
 async function main() {
-  // Sepolia USDT address (as per Requirements 7.4)
-  const SEPOLIA_USDT_ADDRESS = "0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0";
+  // Load TestUSDT address from file or env
+  let usdtAddress = process.env.TESTUSDT_ADDRESS;
+  
+  const testusdtPath = path.join(__dirname, "..", "testusdt-address.json");
+  if (!usdtAddress && fs.existsSync(testusdtPath)) {
+    const config = JSON.parse(fs.readFileSync(testusdtPath, "utf-8"));
+    usdtAddress = config.address;
+  }
+
+  if (!usdtAddress) {
+    throw new Error("TESTUSDT_ADDRESS not found. Run deploy:testusdt first.");
+  }
 
   console.log("Deploying FestivalFactory to Sepolia...");
-  console.log("Using USDT address:", SEPOLIA_USDT_ADDRESS);
+  console.log("Using USDT address:", usdtAddress);
 
   const [deployer] = await ethers.getSigners();
   console.log("Deployer address:", deployer.address);
@@ -22,7 +34,7 @@ async function main() {
 
   // Deploy FestivalFactory
   const FestivalFactory = await ethers.getContractFactory("FestivalFactory");
-  const factory = await FestivalFactory.deploy(SEPOLIA_USDT_ADDRESS);
+  const factory = await FestivalFactory.deploy(usdtAddress);
 
   await factory.waitForDeployment();
 
